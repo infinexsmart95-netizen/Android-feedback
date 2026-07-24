@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ADEEL KING | TAB COUNTER PRO</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --tg-blue: #517da2; --tg-green: #4caf50; --gold: #FCD535; --neon-red: #ff0033; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body, html { margin: 0; padding: 0; background: #000; font-family: -apple-system, sans-serif; height: 100%; width: 100%; overflow: hidden; position: fixed; }
+        #lock-screen { height: 100vh; width: 100%; position: fixed; z-index: 9999; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.15; }
+     .main-panel { width: 92%; max-width: 380px; padding: 40px 20px; background: rgba(0, 0, 0, 0.95); border-radius: 40px; border: 2px solid var(--neon-red); text-align: center; position: relative; z-index: 10; box-shadow: 0 0 50px rgba(255, 0, 51, 0.4); }
+     .icon-container { display: flex; flex-direction: column; align-items: center; gap: 25px; margin-top: 30px; width: 100%; }
+     .cyber-btn { width: 90px; height: 90px; border-radius: 50%; background: #111; border: 2px solid #444; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.4s; position: relative; overflow: hidden; }
+     .cyber-btn i { font-size: 60px; color: #fff; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+     .cyber-btn.active { width: 100%; border-radius: 20px; border-color: var(--gold); }
+     .cyber-btn span { font-size: 0; opacity: 0; color: #fff; font-weight: 800; transition: 0.3s; margin-left: 15px; }
+     .cyber-btn.active span { font-size: 16px; opacity: 1; }
+     .cyber-btn.active i { font-size: 35px; color: var(--gold); width: auto; height: auto; }
+        #main-ui { display: none; background: #fff; height: 100vh; width: 100%; flex-direction: column; position: relative; }
+     .tg-header { background: var(--tg-blue); color: #fff; padding: 15px; display: flex; align-items: center; }
+     .tg-tabs { background: var(--tg-blue); color: #fff; display: flex; font-size: 14px; position: sticky; top: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+     .tab-item { flex: 1; text-align: center; padding: 12px 5px; opacity: 0.7; font-weight: bold; position: relative; display: flex; justify-content: center; align-items: center; gap: 5px; }
+     .tab-item.active { opacity: 1; border-bottom: 3.5px solid #fff; }
+     .tab-count { background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 10px; font-size: 11px; }
+        #chatList { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+     .chat-item { display: flex; padding: 12px 15px; border-bottom: 0.5px solid #f2f2f2; align-items: center; }
+     .avatar { width: 58px; height: 58px; border-radius: 50%; margin-right: 15px; object-fit: cover; background:#eee; }
+     .chat-info { flex: 1; overflow: hidden; }
+     .chat-top { display: flex; justify-content: space-between; align-items: center; }
+     .chat-name { font-weight: bold; font-size: 17px; }
+     .chat-time { color: var(--tg-blue); font-size: 13px; }
+     .badge { background: var(--tg-green); color: #fff; font-size: 12px; font-weight: bold; min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
+     .pencil-btn { position: absolute; bottom: 30px; right: 20px; width: 60px; height: 60px; background: var(--tg-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 999; }
+    </style>
+</head>
+<body onclick="closeAll()">
+
+    <div id="lock-screen">
+        <canvas id="matrix-canvas"></canvas>
+        <div class="main-panel">
+            <i class="fas fa-crown" style="font-size: 60px; color: var(--gold); margin-bottom: 10px;"></i>
+            <div style="color:#fff; font-size:32px; font-weight:900; letter-spacing:5px;">ADEEL KING</div>
+            <div id="userKey" style="color:var(--gold); margin: 20px 0; font-family:monospace; font-size:20px;">Loading...</div>
+            <div class="icon-container">
+                <div class="cyber-btn" id="btg" onclick="tBtn(event,'btg','https://t.me/iambilliniortrader')"><i class="fab fa-telegram"></i><span>@iambilliniortrader</span></div>
+                <div class="cyber-btn" id="bwa" onclick="tBtn(event,'bwa','https://wa.me/923493959558')"><i class="fab fa-whatsapp"></i><span>03493959558</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-ui">
+        <div class="tg-header"><i class="fas fa-bars"></i><span style="margin-left:30px; flex:1; font-size:20px;">Telegram</span><i class="fas fa-search"></i></div>
+        <div class="tg-tabs">
+            <div class="tab-item active"><span>All</span><span class="tab-count">1,240</span></div>
+            <div class="tab-item"><span>Personal</span><span class="tab-count">850</span></div>
+            <div class="tab-item"><span>Unread</span><span class="tab-count">86</span></div>
+        </div>
+        <div id="chatList"></div>
+        <div class="pencil-btn"><i class="fas fa-pencil-alt"></i></div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.height = window.innerHeight; canvas.width = window.innerWidth;
+    const chars = "01ADEELKING"; const fontSize = 16; const columns = canvas.width / fontSize;
+    const drops = []; for(let x = 0; x < columns; x++) drops[x] = 1;
+    function drawMatrix() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ff0000"; ctx.font = fontSize + "px monospace";
+        for(let i = 0; i < drops.length; i++) {
+            const text = chars.charAt(Math.floor(Math.random() * chars.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 50);
+    function tBtn(e, id, url) { e.stopPropagation(); let el = document.getElementById(id); if(!el.classList.contains('active')) { closeAll(); el.classList.add('active'); } else { window.location.href = url; } }
+    function closeAll() { document.querySelectorAll('.cyber-btn').forEach(b => b.classList.remove('active')); }
+
+    const firebaseConfig = { databaseURL: "https://eedback-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let myKey = localStorage.getItem('adeel_tabs_v1_PERMANENT');
+    if (!myKey) {
+        let randomNum = Math.floor(100000 + Math.random() * 900000);
+        myKey = "AK-" + randomNum;
+        localStorage.setItem('adeel_tabs_v1_PERMANENT', myKey);
+    }
+    document.getElementById('userKey').innerText = myKey;
+    db.ref('requests/' + myKey).update({ code: myKey, time: Date.now() });
+    db.ref('approved/' + myKey).on('value', (s) => {
+        if(s.exists()) {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'flex';
+        }
+    });
+
+    // --- PAKISTAN / INDIA / BANGLADESH BOYS & GIRLS DPS ---
+    const desiDps = [
+        "https://randomuser.me/api/portraits/men/11.jpg",
+        "https://randomuser.me/api/portraits/women/12.jpg",
+        "https://randomuser.me/api/portraits/men/32.jpg",
+        "https://randomuser.me/api/portraits/women/44.jpg",
+        "https://randomuser.me/api/portraits/men/45.jpg",
+        "https://randomuser.me/api/portraits/women/26.jpg",
+        "https://randomuser.me/api/portraits/men/15.jpg",
+        "https://randomuser.me/api/portraits/women/33.jpg",
+        "https://randomuser.me/api/portraits/men/22.jpg",
+        "https://randomuser.me/api/portraits/women/68.jpg",
+        "https://randomuser.me/api/portraits/men/81.jpg",
+        "https://randomuser.me/api/portraits/women/55.jpg",
+        "https://randomuser.me/api/portraits/men/19.jpg",
+        "https://randomuser.me/api/portraits/women/21.jpg",
+        "https://randomuser.me/api/portraits/men/67.jpg",
+        "https://randomuser.me/api/portraits/women/14.jpg",
+        "https://randomuser.me/api/portraits/men/28.jpg",
+        "https://randomuser.me/api/portraits/women/37.jpg",
+        "https://randomuser.me/api/portraits/men/41.jpg",
+        "https://randomuser.me/api/portraits/women/50.jpg"
+    ];
+
+    const quotexMessages = [
+        "Quotex VIP Signal Ready 🔥", "EUR/USD BUY 99% Sure", "OTC Market Pump 💹",
+        "Quotex 1-Min Trick Working", "Big Profit Today", "100% Working Strategy ✅",
+        "Loss Recover Signal", "GBP/JPY SELL Confirmed", "OTC Winning Streak",
+        "Live Trading on Quotex 🔴", "Compounding Done", "Strong Signal 💰"
+    ];
+    const names = ["Ayesha Khan", "Zeeshan VIP", "Ali Trader", "Sania Malik", "Hamza Quotex", "Alyan King", "Fatima Noor", "Bilal Ahmed", "Iqra Baloch", "Usman Signals", "Nimra Queen", "Arslan Trader"];
+
+    function getCurrentTime(){
+        const now = new Date();
+        let h = now.getHours(); let m = now.getMinutes();
+        let ampm = h >= 12? 'PM' : 'AM'; h = h % 12; h = h? h : 12;
+        m = m < 10? '0'+m : m; return h + ":" + m + " " + ampm;
+    }
+
+    function loadChats(n) {
+        const list = document.getElementById('chatList');
+        const currentTime = getCurrentTime();
+        for(let i=0; i<n; i++) {
+            let msg = quotexMessages[Math.floor(Math.random() * quotexMessages.length)];
+            let name = names[Math.floor(Math.random()*names.length)];
+            let dp = desiDps[Math.floor(Math.random()*desiDps.length)];
+            list.innerHTML += `<div class="chat-item"><img class="avatar" src="${dp}"><div class="chat-info"><div class="chat-top"><span class="chat-name">${name}</span><span class="chat-time">${currentTime}</span></div><div class="chat-bottom" style="display:flex; justify-content:space-between; margin-top:4px;"><span style="color:#8e8e93; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${msg}</span><span class="badge">${Math.floor(Math.random()*9)+1}</span></div></div></div>`;
+        }
+    }
+    loadChats(30);
+    document.getElementById('chatList').onscroll = function() { if(this.scrollTop + this.clientHeight >= this.scrollHeight - 100) loadChats(15); };
+</script>
+</body>
+</html>
